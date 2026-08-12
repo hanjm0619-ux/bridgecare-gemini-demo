@@ -1,81 +1,67 @@
 export const maxDuration = 60;
 
 const MODEL = 'gemini-3.6-flash';
-const GEMINI_ENDPOINT = 'https://generativelanguage.googleapis.com/v1beta/interactions';
+const GENERATE_URL = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent`;
 const MAX_BASE64_CHARS = 3_650_000;
-const RETRYABLE_STATUS = new Set([429, 500, 502, 503, 504]);
+const RETRYABLE = new Set([429, 500, 502, 503, 504]);
 
-const responseSchema = {
-  type: 'object',
-  additionalProperties: false,
+const analysisSchema = {
+  type: 'OBJECT',
   properties: {
-    summary: { type: 'string' },
+    summary: { type: 'STRING' },
     transcript: {
-      type: 'array',
+      type: 'ARRAY',
       items: {
-        type: 'object',
-        additionalProperties: false,
+        type: 'OBJECT',
         properties: {
-          speaker: { type: 'string' },
-          text: { type: 'string' }
+          speaker: { type: 'STRING' },
+          text: { type: 'STRING' }
         },
         required: ['speaker', 'text']
       }
     },
     emotion: {
-      type: 'object',
-      additionalProperties: false,
+      type: 'OBJECT',
       properties: {
-        label: { type: 'string' },
-        detail: { type: 'string' }
+        label: { type: 'STRING' },
+        detail: { type: 'STRING' }
       },
       required: ['label', 'detail']
     },
     topics: {
-      type: 'object',
-      additionalProperties: false,
+      type: 'OBJECT',
       properties: {
-        label: { type: 'string' },
-        detail: { type: 'string' }
+        label: { type: 'STRING' },
+        detail: { type: 'STRING' }
       },
       required: ['label', 'detail']
     },
     barrier: {
-      type: 'object',
-      additionalProperties: false,
+      type: 'OBJECT',
       properties: {
-        label: { type: 'string' },
-        detail: { type: 'string' }
+        label: { type: 'STRING' },
+        detail: { type: 'STRING' }
       },
       required: ['label', 'detail']
     },
     guide: {
-      type: 'object',
-      additionalProperties: false,
+      type: 'OBJECT',
       properties: {
-        headline: { type: 'string' },
-        rationale: { type: 'string' },
-        openers: {
-          type: 'array',
-          minItems: 3,
-          maxItems: 3,
-          items: { type: 'string' }
-        },
+        headline: { type: 'STRING' },
+        rationale: { type: 'STRING' },
+        openers: { type: 'ARRAY', items: { type: 'STRING' } },
         avoid: {
-          type: 'array',
-          minItems: 3,
-          maxItems: 3,
+          type: 'ARRAY',
           items: {
-            type: 'object',
-            additionalProperties: false,
+            type: 'OBJECT',
             properties: {
-              text: { type: 'string' },
-              reason: { type: 'string' }
+              text: { type: 'STRING' },
+              reason: { type: 'STRING' }
             },
             required: ['text', 'reason']
           }
         },
-        coach_note: { type: 'string' }
+        coach_note: { type: 'STRING' }
       },
       required: ['headline', 'rationale', 'openers', 'avoid', 'coach_note']
     }
@@ -83,23 +69,35 @@ const responseSchema = {
   required: ['summary', 'transcript', 'emotion', 'topics', 'barrier', 'guide']
 };
 
-const analysisPrompt = `
+const transcriptionPrompt = `
+다음 한국어 통화 음성을 정확하게 전사하세요.
+- 화자를 가능한 한 구분해서 각 줄을 "AI: ..." 또는 "부모님: ..." 형태로 적으세요.
+- 화자 역할을 확신할 수 없으면 "화자 1", "화자 2"를 사용하세요.
+- 들리지 않는 부분은 [불명확]으로 표시하세요.
+- 분석이나 조언을 하지 말고 전사만 하세요.
+`;
+
+const analysisPrompt = transcript => `
 당신은 부모-자녀 간 자연스러운 대화를 돕는 한국어 대화 코치입니다.
-첨부한 통화 음성을 직접 듣고, 오디오에서 확인할 수 있는 내용만 근거로 분석하세요.
+아래 전사만 근거로 분석하세요. 전사에 없는 사실은 만들지 마세요.
 
-해야 할 일:
-1. 핵심 대화를 화자별로 전사합니다. AI와 부모님을 구분할 수 있으면 그렇게 표시하고, 확신이 없으면 '화자 1', '화자 2'로 표시합니다.
-2. 부모님이 직접 표현한 내용에서 정서 신호, 핵심 관심사, 가족 대화를 어렵게 하는 장벽을 찾습니다.
-3. 자녀가 다음 통화에서 실제로 사용할 수 있는 자연스러운 한국어 문장 3개를 제안합니다.
-4. 피하면 좋은 표현 3개와 각각의 이유를 제안합니다.
-5. 오늘 대화의 목표를 한 문장으로 제안합니다.
+[전사]
+${transcript}
 
-원칙:
-- 들리지 않거나 불확실한 발화는 지어내지 말고 '[불명확]'이라고 표시합니다.
-- 질병, 우울증, 치매 등 의학적·정신건강 진단을 하지 않습니다.
-- 부모를 감시하거나 통제하기 위한 조언보다 관계와 양방향 소통에 초점을 둡니다.
-- 분석 근거가 부족한 경우 그 사실을 명시합니다.
-- 결과는 자연스러운 한국어로 작성합니다.
+요구사항:
+1. summary: 통화에서 확인되는 핵심 맥락을 1~2문장으로 요약.
+2. transcript: 중요한 발화를 화자별 배열로 정리. speaker/text 필드 사용.
+3. emotion: 부모님의 정서 신호. 진단하지 말고, 근거가 약하면 '근거 부족'이라고 명시.
+4. topics: 부모님이 관심을 보인 일상 주제.
+5. barrier: 가족 대화를 어렵게 하는 표현이나 맥락. 없으면 '뚜렷한 장벽 없음'.
+6. guide.headline: 자녀가 먼저 꺼내면 좋은 주제 또는 한 문장.
+7. guide.rationale: 왜 그 접근이 자연스러운지 설명.
+8. guide.openers: 실제로 사용할 수 있는 자연스러운 문장 3개.
+9. guide.avoid: 피하면 좋은 표현 3개와 이유.
+10. guide.coach_note: 오늘 대화의 목표를 한 문장으로.
+
+의학적·정신건강 진단은 하지 말고, 감시·통제보다 양방향 소통에 초점을 두세요.
+결과는 한국어로 작성하세요.
 `;
 
 const mimeAliases = new Map([
@@ -111,16 +109,14 @@ const mimeAliases = new Map([
   ['audio/x-aiff', 'audio/aiff'],
   ['audio/aac', 'audio/aac'],
   ['audio/ogg', 'audio/ogg'],
-  ['audio/flac', 'audio/flac'],
-  ['audio/m4a', 'audio/m4a'],
-  ['audio/x-m4a', 'audio/m4a']
+  ['audio/flac', 'audio/flac']
 ]);
 
 function normalizeMimeType(value) {
   return mimeAliases.get(String(value || '').toLowerCase()) || null;
 }
 
-function headers() {
+function corsHeaders() {
   return {
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
@@ -132,10 +128,7 @@ function headers() {
 function respond(data, status = 200) {
   return new Response(JSON.stringify(data), {
     status,
-    headers: {
-      ...headers(),
-      'Content-Type': 'application/json; charset=utf-8'
-    }
+    headers: { ...corsHeaders(), 'Content-Type': 'application/json; charset=utf-8' }
   });
 }
 
@@ -143,29 +136,30 @@ function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-function extractOutputText(raw) {
-  if (typeof raw?.output_text === 'string' && raw.output_text.trim()) {
-    return raw.output_text.trim();
-  }
-
-  const texts = [];
-  for (const step of raw?.steps || []) {
-    if (step?.type !== 'model_output') continue;
-    for (const part of step?.content || []) {
-      if (part?.type === 'text' && typeof part.text === 'string') {
-        texts.push(part.text);
-      }
-    }
-  }
-  return texts.join('').trim();
+function extractText(raw) {
+  return (raw?.candidates || [])
+    .flatMap(c => c?.content?.parts || [])
+    .filter(p => typeof p?.text === 'string')
+    .map(p => p.text)
+    .join('')
+    .trim();
 }
 
-async function callGemini(apiKey, payload) {
-  let lastResponse = null;
-  let lastRaw = null;
+function cleanJson(text) {
+  let s = String(text || '').trim();
+  s = s.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '').trim();
+  const first = s.indexOf('{');
+  const last = s.lastIndexOf('}');
+  if (first >= 0 && last > first) s = s.slice(first, last + 1);
+  return s;
+}
 
-  for (let attempt = 1; attempt <= 3; attempt += 1) {
-    const response = await fetch(GEMINI_ENDPOINT, {
+async function geminiRequest(apiKey, payload, attempts = 3) {
+  let lastResponse;
+  let lastRaw = {};
+
+  for (let i = 1; i <= attempts; i += 1) {
+    const response = await fetch(GENERATE_URL, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -179,18 +173,58 @@ async function callGemini(apiKey, payload) {
     lastRaw = raw;
 
     if (response.ok) return { response, raw };
-    if (!RETRYABLE_STATUS.has(response.status) || attempt === 3) break;
-
-    await sleep(500 * attempt);
+    if (!RETRYABLE.has(response.status) || i === attempts) break;
+    await sleep(500 * i);
   }
 
   return { response: lastResponse, raw: lastRaw };
 }
 
+function buildAudioPayload(audioBase64, mimeType) {
+  return {
+    contents: [
+      {
+        role: 'user',
+        parts: [
+          { text: transcriptionPrompt },
+          {
+            inlineData: {
+              mimeType,
+              data: audioBase64
+            }
+          }
+        ]
+      }
+    ]
+  };
+}
+
+function buildAnalysisPayload(transcript, structured = true) {
+  const payload = {
+    contents: [
+      {
+        role: 'user',
+        parts: [{ text: analysisPrompt(transcript) }]
+      }
+    ]
+  };
+
+  if (structured) {
+    payload.generationConfig = {
+      responseMimeType: 'application/json',
+      responseSchema: analysisSchema
+    };
+  } else {
+    payload.contents[0].parts[0].text += '\n반드시 JSON 객체만 출력하세요. 코드펜스는 사용하지 마세요.';
+  }
+
+  return payload;
+}
+
 export default {
   async fetch(request) {
     if (request.method === 'OPTIONS') {
-      return new Response(null, { status: 204, headers: headers() });
+      return new Response(null, { status: 204, headers: corsHeaders() });
     }
     if (request.method !== 'POST') {
       return respond({ ok: false, stage: 'vercel-route', error: 'POST 요청만 지원합니다.' }, 405);
@@ -198,11 +232,7 @@ export default {
 
     const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) {
-      return respond({
-        ok: false,
-        stage: 'environment',
-        error: '서버에 GEMINI_API_KEY 환경변수가 없습니다. Vercel 환경변수 저장 후 새 배포가 필요합니다.'
-      }, 500);
+      return respond({ ok: false, stage: 'environment', error: 'GEMINI_API_KEY 환경변수가 없습니다.' }, 500);
     }
 
     let body;
@@ -214,104 +244,88 @@ export default {
 
     const audioBase64 = body?.audioBase64;
     const mimeType = normalizeMimeType(body?.mimeType);
-    const fileName = String(body?.fileName || 'audio');
 
     if (typeof audioBase64 !== 'string' || !audioBase64.length) {
       return respond({ ok: false, stage: 'validation', error: '분석할 음성 데이터가 없습니다.' }, 400);
     }
     if (audioBase64.length > MAX_BASE64_CHARS) {
-      return respond({
-        ok: false,
-        stage: 'validation',
-        error: '파일이 너무 큽니다. 이 데모는 Vercel 요청 제한 때문에 원본 약 2.5MB 이하 음성을 권장합니다.'
-      }, 413);
+      return respond({ ok: false, stage: 'validation', error: '파일이 너무 큽니다. 원본 약 2.5MB 이하로 테스트해주세요.' }, 413);
     }
     if (!mimeType) {
-      return respond({
-        ok: false,
-        stage: 'validation',
-        error: '지원하지 않는 음성 형식입니다. MP3, WAV, AIFF, AAC, OGG, FLAC 또는 M4A를 사용해주세요.'
-      }, 415);
+      return respond({ ok: false, stage: 'validation', error: '지원하지 않는 음성 형식입니다. MP3, WAV, AIFF, AAC, OGG, FLAC를 사용해주세요.' }, 415);
     }
 
-    // 2026-08-12 Google 공식 Audio understanding 문서의 Interactions API 형식:
-    // input 배열에 text/audio Content를 직접 넣고, inline audio는 data + mime_type을 사용합니다.
-    const payload = {
-      model: MODEL,
-      store: false,
-      input: [
-        {
-          type: 'text',
-          text: `${analysisPrompt}\n업로드 파일명: ${fileName}`
-        },
-        {
-          type: 'audio',
-          data: audioBase64,
-          mime_type: mimeType
-        }
-      ],
-      response_format: [
-        {
-          type: 'text',
-          mime_type: 'application/json',
-          schema: responseSchema
-        }
-      ]
-    };
+    // 1단계: 오디오 -> 텍스트 전사. 구조화 출력 없이 가장 단순한 multimodal 요청으로 분리.
+    let transcribed;
+    try {
+      transcribed = await geminiRequest(apiKey, buildAudioPayload(audioBase64, mimeType));
+    } catch (error) {
+      console.error('Gemini transcription network error', error);
+      return respond({ ok: false, stage: 'transcription-network', error: 'Gemini 전사 서버에 연결하지 못했습니다.' }, 502);
+    }
 
+    if (!transcribed.response?.ok) {
+      const message = transcribed.raw?.error?.message || 'Gemini가 음성 전사 요청을 처리하지 못했습니다.';
+      console.error('Gemini transcription error', transcribed.response?.status, transcribed.raw);
+      return respond({
+        ok: false,
+        stage: 'transcription',
+        error: message,
+        googleStatus: transcribed.response?.status || 500
+      }, 502);
+    }
+
+    const transcript = extractText(transcribed.raw);
+    if (!transcript) {
+      return respond({ ok: false, stage: 'transcription-parse', error: 'Gemini 전사 결과가 비어 있습니다.' }, 502);
+    }
+
+    // 2단계: 전사 텍스트 -> 구조화된 대화 코칭 JSON.
+    let analyzed;
+    try {
+      analyzed = await geminiRequest(apiKey, buildAnalysisPayload(transcript, true));
+    } catch (error) {
+      console.error('Gemini analysis network error', error);
+      return respond({ ok: false, stage: 'analysis-network', error: 'Gemini 분석 서버에 연결하지 못했습니다.' }, 502);
+    }
+
+    // 구조화 출력 자체가 실패하면 같은 최신 모델로 일반 JSON 출력 1회 fallback.
+    if (!analyzed.response?.ok) {
+      console.warn('Structured analysis failed; retrying without schema', analyzed.response?.status, analyzed.raw);
+      analyzed = await geminiRequest(apiKey, buildAnalysisPayload(transcript, false), 2);
+    }
+
+    if (!analyzed.response?.ok) {
+      const message = analyzed.raw?.error?.message || 'Gemini가 대화 분석 요청을 처리하지 못했습니다.';
+      console.error('Gemini analysis error', analyzed.response?.status, analyzed.raw);
+      return respond({
+        ok: false,
+        stage: 'analysis',
+        error: message,
+        googleStatus: analyzed.response?.status || 500
+      }, 502);
+    }
+
+    const outputText = extractText(analyzed.raw);
     let result;
     try {
-      result = await callGemini(apiKey, payload);
+      result = JSON.parse(cleanJson(outputText));
     } catch (error) {
-      console.error('Gemini network error', error);
+      console.error('JSON parse error', error, outputText?.slice(0, 1200));
       return respond({
         ok: false,
-        stage: 'gemini-network',
-        error: 'Vercel에서 Gemini 서버로 연결하지 못했습니다.'
-      }, 502);
-    }
-
-    const { response, raw } = result;
-    if (!response?.ok) {
-      const message = raw?.error?.message || 'Gemini API가 요청을 거부했습니다.';
-      console.error('Gemini API error', response?.status, raw);
-      return respond({
-        ok: false,
-        stage: 'gemini-api',
-        googleStatus: response?.status || 502,
-        error: message
-      }, response?.status === 429 ? 429 : 502);
-    }
-
-    const outputText = extractOutputText(raw);
-    if (!outputText) {
-      console.error('Gemini empty output', raw);
-      return respond({
-        ok: false,
-        stage: 'gemini-output',
-        error: 'Gemini 응답에서 텍스트 결과를 찾지 못했습니다.'
-      }, 502);
-    }
-
-    let parsed;
-    try {
-      parsed = JSON.parse(outputText);
-    } catch (error) {
-      console.error('Gemini JSON parse error', error, outputText);
-      return respond({
-        ok: false,
-        stage: 'json-parse',
-        error: 'Gemini 결과가 JSON 형식으로 해석되지 않았습니다.'
+        stage: 'analysis-parse',
+        error: 'Gemini 분석 응답을 JSON으로 읽지 못했습니다.'
       }, 502);
     }
 
     return respond({
       ok: true,
-      result: parsed,
+      result,
       meta: {
         model: MODEL,
-        api: 'Interactions API',
-        apiVersion: 'v1beta'
+        api: 'generateContent v1beta (2-stage)',
+        transcriptionChars: transcript.length
       }
     });
   }

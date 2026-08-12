@@ -92,14 +92,14 @@ function inferMimeType(file) {
   const ext = file.name.split('.').pop()?.toLowerCase();
   const byExtension = {
     mp3: 'audio/mp3', wav: 'audio/wav', aiff: 'audio/aiff', aif: 'audio/aiff',
-    aac: 'audio/aac', ogg: 'audio/ogg', flac: 'audio/flac', m4a: 'audio/m4a'
+    aac: 'audio/aac', ogg: 'audio/ogg', flac: 'audio/flac'
   };
   return byExtension[ext] || file.type || '';
 }
 
 function isSupportedAudio(file) {
-  return /\.(mp3|wav|aiff?|aac|ogg|flac|m4a)$/i.test(file.name) ||
-    ['audio/mpeg','audio/mp3','audio/wav','audio/x-wav','audio/aiff','audio/x-aiff','audio/aac','audio/ogg','audio/flac','audio/m4a','audio/x-m4a'].includes(file.type);
+  return /\.(mp3|wav|aiff?|aac|ogg|flac)$/i.test(file.name) ||
+    ['audio/mpeg','audio/mp3','audio/wav','audio/x-wav','audio/aiff','audio/x-aiff','audio/aac','audio/ogg','audio/flac'].includes(file.type);
 }
 
 function loadFile(file) {

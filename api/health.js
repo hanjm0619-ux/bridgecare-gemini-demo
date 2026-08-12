@@ -1,25 +1,24 @@
 const MODEL = 'gemini-3.6-flash';
-const GEMINI_ENDPOINT = 'https://generativelanguage.googleapis.com/v1beta/interactions';
+const URL = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent`;
 
 function respond(data, status = 200) {
-  return Response.json(data, {
+  return new Response(JSON.stringify(data), {
     status,
     headers: {
+      'Content-Type': 'application/json; charset=utf-8',
       'Cache-Control': 'no-store',
       'Access-Control-Allow-Origin': '*'
     }
   });
 }
 
-function extractOutputText(raw) {
-  const texts = [];
-  for (const step of raw?.steps || []) {
-    if (step?.type !== 'model_output') continue;
-    for (const part of step?.content || []) {
-      if (part?.type === 'text' && typeof part.text === 'string') texts.push(part.text);
-    }
-  }
-  return texts.join('').trim();
+function extractText(raw) {
+  return (raw?.candidates || [])
+    .flatMap(c => c?.content?.parts || [])
+    .filter(p => typeof p?.text === 'string')
+    .map(p => p.text)
+    .join('')
+    .trim();
 }
 
 export default {
@@ -30,57 +29,38 @@ export default {
 
     const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) {
-      return respond({
-        ok: false,
-        stage: 'environment',
-        error: 'GEMINI_API_KEY가 설정되지 않았습니다.'
-      }, 500);
+      return respond({ ok: false, stage: 'environment', error: 'GEMINI_API_KEY 환경변수가 없습니다.' }, 500);
     }
 
-    const url = new URL(request.url);
-    if (url.searchParams.get('probe') !== '1') {
-      return respond({
-        ok: true,
-        keyConfigured: true,
-        model: MODEL,
-        endpoint: '/v1beta/interactions',
-        hint: 'Gemini까지 실제 호출하려면 ?probe=1을 붙이세요.'
-      });
-    }
-
-    let response;
     try {
-      response = await fetch(GEMINI_ENDPOINT, {
+      const response = await fetch(URL, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'x-goog-api-key': apiKey
         },
         body: JSON.stringify({
-          model: MODEL,
-          store: false,
-          input: 'Reply exactly with OK.'
+          contents: [{ role: 'user', parts: [{ text: 'Reply with exactly OK' }] }]
         })
       });
-    } catch (error) {
-      return respond({ ok: false, stage: 'gemini-network', error: String(error?.message || error) }, 502);
-    }
+      const raw = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        return respond({
+          ok: false,
+          stage: 'gemini-api',
+          error: raw?.error?.message || 'Gemini API 오류',
+          googleStatus: response.status
+        }, 502);
+      }
 
-    const raw = await response.json().catch(() => ({}));
-    if (!response.ok) {
       return respond({
-        ok: false,
-        stage: 'gemini-api',
-        googleStatus: response.status,
-        error: raw?.error?.message || 'Gemini probe failed.'
-      }, 502);
+        ok: true,
+        model: MODEL,
+        api: 'generateContent v1beta',
+        reply: extractText(raw) || 'OK'
+      });
+    } catch (error) {
+      return respond({ ok: false, stage: 'network', error: String(error?.message || error) }, 502);
     }
-
-    return respond({
-      ok: true,
-      geminiReachable: true,
-      model: MODEL,
-      output: extractOutputText(raw) || '(응답 텍스트 없음)'
-    });
   }
 };
