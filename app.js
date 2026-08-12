@@ -50,7 +50,7 @@ const sampleResult = {
     { speaker: 'AI', text: '가족들과는 연락 자주 하세요?' },
     { speaker: '부모님', text: '애들이 바쁠까봐 내가 먼저 연락하기도 좀 그렇고.' }
   ],
-  emotion: { label: '가벼운 외로움', detail: '외출이 줄고 가족에게 먼저 연락하기를 망설이는 표현이 반복됩니다.' },
+  emotion: { label: '키워드', detail: '따분함, 산책로, 친구, 연락을 두려워함' },
   topics: { label: '산책 · 가족 소식', detail: '건강 점검보다 일상 경험과 가족 소식에 자연스럽게 반응했습니다.' },
   barrier: { label: '“바쁠까봐” 연락을 망설임', detail: '자녀에게 부담을 주고 싶지 않다는 생각이 먼저 연락하지 않는 이유로 보입니다.' },
   guide: {
