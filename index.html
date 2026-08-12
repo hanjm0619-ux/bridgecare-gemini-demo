@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="부모님과 AI의 통화 음성을 분석해 자녀에게 관계 중심 대화 가이드를 제공하는 이어봄 데모" />
+  <title>이어봄 | AI Family Conversation Care</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="#top" aria-label="이어봄 홈">
+      <span class="brand-mark">이</span>
+      <span><strong>이어봄</strong><small>AI Family Conversation Care</small></span>
+    </a>
+    <nav>
+      <a href="#why">문제 정의</a>
+      <a href="#demo">데모</a>
+      <a href="#flow">서비스 흐름</a>
+    </nav>
+    <button class="ghost-btn" data-scroll="#demo">데모 실행</button>
+  </header>
+
+  <main id="top">
+    <section class="hero section-shell">
+      <div class="hero-copy">
+        <div class="eyebrow">AI 돌봄의 다음 단계</div>
+        <h1>부모님을 <span>관리하는 AI</span>가 아니라,<br />가족의 대화를 <em>이어주는 AI</em></h1>
+        <p class="hero-description">
+          AI가 부모님과 나눈 대화의 감정·관심사·생활 맥락을 읽고,
+          자녀에게 단순 상태 보고서가 아니라 <strong>“오늘 어떤 말로 먼저 연락하면 좋을지”</strong>를 제안합니다.
+        </p>
+        <div class="hero-actions">
+          <button class="primary-btn" data-scroll="#demo">음성 데모 시작</button>
+          <button class="secondary-btn" data-scroll="#flow">작동 방식 보기</button>
+        </div>
+        <div class="hero-points">
+          <span>✓ 상태 보고를 넘어 관계 회복</span>
+          <span>✓ 바로 쓸 수 있는 대화 문장</span>
+          <span>✓ 부모의 자율성과 존중 우선</span>
+        </div>
+      </div>
+
+      <div class="hero-visual" aria-label="서비스 컨셉 미리보기">
+        <div class="orb orb-one"></div>
+        <div class="orb orb-two"></div>
+        <div class="phone-card">
+          <div class="phone-top">
+            <div class="avatar">母</div>
+            <div><strong>어머니와 AI 통화 중</strong><span>02:14 · 대화 상태 양호</span></div>
+            <div class="wave-dot"><i></i><i></i><i></i><i></i></div>
+          </div>
+          <div class="transcript-preview">
+            <p class="ai-line">“오늘 점심은 어떻게 드셨어요?”</p>
+            <p class="parent-line">“그냥 대충 먹었지. 요즘 입맛도 없고…”</p>
+            <p class="ai-line">“최근에 재미있었던 일은 있으셨어요?”</p>
+          </div>
+          <div class="signal-strip">
+            <div><span>감정</span><strong>조금 쓸쓸함</strong></div>
+            <div><span>관심사</span><strong>동네 산책</strong></div>
+            <div><span>제안</span><strong>경험부터 질문</strong></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="why" class="section-shell why-section">
+      <div class="section-heading centered">
+        <span>WHY</span>
+        <h2>“괜찮으세요?”라는 보고서만으로는<br />대화가 시작되지 않습니다.</h2>
+        <p>건강 이상을 감지하는 것과, 가족이 서로 이해하도록 돕는 것은 다른 문제입니다.</p>
+      </div>
+      <div class="compare-grid">
+        <article class="compare-card old-model">
+          <div class="card-kicker">기존 방식</div>
+          <h3>AI → 부모님 → 보고서 → 자녀</h3>
+          <p>자녀는 부모 상태를 확인하지만, 실제 대화는 여전히 어렵습니다.</p>
+          <ul>
+            <li>“오늘 식사는 하셨습니다.”</li>
+            <li>“건강 관련 특이사항 없음.”</li>
+            <li>“최근 외출 빈도가 감소했습니다.”</li>
+          </ul>
+          <div class="result-label muted">결과: 확인과 관리 중심</div>
+        </article>
+        <article class="compare-card new-model">
+          <div class="card-kicker">이어봄 방식</div>
+          <h3>AI → 부모님 ↔ 분석 → 자녀 대화 코칭</h3>
+          <p>AI가 얻은 맥락을 가족 간의 자연스러운 대화로 다시 연결합니다.</p>
+          <ul>
+            <li>“어머니가 동네 산책 이야기를 여러 번 꺼냈어요.”</li>
+            <li>“건강 질문보다 산책 이야기를 먼저 꺼내보세요.”</li>
+            <li>“이번 주말 ‘같이 걸을까?’라고 제안해보세요.”</li>
+          </ul>
+          <div class="result-label">결과: 관계와 소통 중심</div>
+        </article>
+      </div>
+    </section>
+
+    <section id="demo" class="demo-section">
+      <div class="section-shell">
+        <div class="section-heading">
+          <span>INTERACTIVE DEMO</span>
+          <h2>통화 음성을 넣고, 가족에게 필요한<br />대화 포인트를 확인해보세요.</h2>
+          <p>Vercel 배포에서는 Gemini 3.6 Flash가 실제 음성을 분석합니다. GitHub Pages에서는 샘플 모드만 사용하세요.</p>
+        </div>
+
+        <div class="runtime-banner" id="runtimeBanner">
+          <div>
+            <strong id="runtimeTitle">실행 환경 확인 중</strong>
+            <span id="runtimeDetail">현재 사이트가 실제 API를 사용할 수 있는지 확인합니다.</span>
+          </div>
+          <button class="mini-btn" id="healthBtn" type="button">서버 연결 확인</button>
+        </div>
+
+        <div class="demo-layout">
+          <aside class="demo-steps">
+            <button class="step-item active" data-step="1"><span>01</span><div><strong>음성 업로드</strong><small>통화 녹음 파일</small></div></button>
+            <button class="step-item" data-step="2"><span>02</span><div><strong>AI 대화 분석</strong><small>전사·정서·관심사</small></div></button>
+            <button class="step-item" data-step="3"><span>03</span><div><strong>자녀용 가이드</strong><small>말 걸기 방식 제안</small></div></button>
+          </aside>
+
+          <div class="demo-panel">
+            <section class="demo-screen active" data-screen="1">
+              <div class="screen-head">
+                <div><span class="screen-label">STEP 01</span><h3>부모님과 AI의 통화 파일 업로드</h3></div>
+                <span class="status-chip neutral" id="modeChip">환경 확인 중</span>
+              </div>
+
+              <label class="upload-zone" for="audioUpload" id="uploadZone">
+                <input id="audioUpload" type="file" accept="audio/mpeg,audio/mp3,audio/wav,audio/aiff,audio/aac,audio/ogg,audio/flac,audio/m4a,.mp3,.wav,.aiff,.aac,.ogg,.flac,.m4a" hidden />
+                <div class="upload-icon">↥</div>
+                <strong id="uploadTitle">음성 파일을 여기에 올려주세요</strong>
+                <span id="uploadSub">MP3, WAV, AIFF, AAC, OGG, FLAC, M4A · 권장 2.5MB 이하</span>
+                <button type="button" class="mini-btn" id="chooseFileBtn">파일 선택</button>
+              </label>
+
+              <div class="audio-preview hidden" id="audioPreview">
+                <div class="file-meta"><div class="file-icon">♫</div><div><strong id="fileName">audio.mp3</strong><span id="fileSize">0 MB</span></div></div>
+                <audio id="audioPlayer" controls></audio>
+              </div>
+
+              <div class="privacy-note">
+                <strong>테스트 안내</strong>
+                <span>실제 분석 시 음성이 Gemini API로 전송됩니다. 무료 티어는 데이터가 Google 제품 개선에 사용될 수 있으므로 발표 테스트에서는 민감정보가 없는 녹음을 권장합니다.</span>
+              </div>
+
+              <div class="demo-shortcut">
+                <div><strong>API 없이 화면만 확인하려면</strong><span>샘플 통화로 전사 → 분석 → 가이드 전체 흐름을 즉시 볼 수 있습니다.</span></div>
+                <button class="secondary-btn compact" id="sampleBtn" type="button">샘플 통화 사용</button>
+              </div>
+
+              <div class="screen-actions right"><button class="primary-btn" id="analyzeBtn" disabled>AI 분석 시작</button></div>
+            </section>
+
+            <section class="demo-screen" data-screen="2">
+              <div class="screen-head">
+                <div><span class="screen-label">STEP 02</span><h3>통화 맥락 분석</h3></div>
+                <span class="status-chip processing" id="analysisStatus">분석 중</span>
+              </div>
+
+              <div class="analysis-progress">
+                <div class="progress-line"><i></i></div>
+                <div class="progress-items">
+                  <span class="done">음성 수신</span>
+                  <span id="progressTranscript">대화 전사</span>
+                  <span id="progressEmotion">정서 분석</span>
+                  <span id="progressTopic">관심사 추출</span>
+                  <span id="progressGuide">가이드 생성</span>
+                </div>
+              </div>
+
+              <div class="analysis-error hidden" id="analysisError"></div>
+
+              <div class="transcript-box hidden" id="transcriptBox">
+                <div class="box-title"><strong>AI 통화 요약</strong><span id="transcriptSource">Gemini 분석</span></div>
+                <p class="summary-text" id="summaryText"></p>
+                <div class="conversation-log" id="transcriptLog"></div>
+              </div>
+
+              <div class="insight-grid hidden" id="insightGrid">
+                <article class="insight-card"><span>정서 신호</span><strong id="emotionLabel">-</strong><p id="emotionDetail">-</p></article>
+                <article class="insight-card"><span>핵심 관심사</span><strong id="topicsLabel">-</strong><p id="topicsDetail">-</p></article>
+                <article class="insight-card"><span>대화 장벽</span><strong id="barrierLabel">-</strong><p id="barrierDetail">-</p></article>
+              </div>
+
+              <div class="screen-actions between hidden" id="analysisActions">
+                <button class="secondary-btn" id="backToUpload">다시 업로드</button>
+                <button class="primary-btn" id="showGuideBtn">자녀용 가이드 보기</button>
+              </div>
+            </section>
+
+            <section class="demo-screen" data-screen="3">
+              <div class="screen-head">
+                <div><span class="screen-label">STEP 03</span><h3>오늘의 대화 가이드</h3></div>
+                <span class="status-chip positive">관계 중심 코칭</span>
+              </div>
+
+              <div class="guide-highlight">
+                <span>오늘 먼저 꺼내면 좋은 주제</span>
+                <h4 id="guideHeadline">분석 결과를 바탕으로 제안합니다.</h4>
+                <p id="guideRationale">부모님의 실제 표현에서 자연스럽게 이어질 수 있는 주제를 선택합니다.</p>
+              </div>
+
+              <div class="guide-grid">
+                <article class="guide-card do-card">
+                  <div class="guide-card-title"><span>DO</span><strong>이렇게 말해보세요</strong></div>
+                  <div class="message-example" data-opener>-</div>
+                  <div class="message-example" data-opener>-</div>
+                  <div class="message-example" data-opener>-</div>
+                </article>
+                <article class="guide-card avoid-card">
+                  <div class="guide-card-title"><span>AVOID</span><strong>이 방식은 피해주세요</strong></div>
+                  <div class="avoid-row" data-avoid-row><b>×</b><p><span class="avoid-text">-</span><small>-</small></p></div>
+                  <div class="avoid-row" data-avoid-row><b>×</b><p><span class="avoid-text">-</span><small>-</small></p></div>
+                  <div class="avoid-row" data-avoid-row><b>×</b><p><span class="avoid-text">-</span><small>-</small></p></div>
+                </article>
+              </div>
+
+              <div class="coach-note"><div class="coach-avatar">AI</div><div><span>대화 코치의 한 줄 제안</span><p><strong id="coachNote">-</strong></p></div></div>
+              <div class="screen-actions between"><button class="secondary-btn" id="backToAnalysis">분석 다시 보기</button><button class="primary-btn" id="copyGuideBtn">가이드 복사</button></div>
+            </section>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="flow" class="section-shell flow-section">
+      <div class="section-heading centered"><span>HOW IT WORKS</span><h2>AI가 정보를 모으는 데서 끝나지 않고,<br />가족 대화까지 연결합니다.</h2></div>
+      <div class="flow-line">
+        <article><span class="flow-no">1</span><div class="flow-icon">☎</div><h3>자동 AI 통화</h3><p>AI가 부모님께 전화해 일상 대화를 나눕니다.</p></article>
+        <div class="flow-arrow">→</div>
+        <article><span class="flow-no">2</span><div class="flow-icon">◎</div><h3>대화 맥락 분석</h3><p>감정, 관심사, 변화와 회피 표현을 추출합니다.</p></article>
+        <div class="flow-arrow">→</div>
+        <article><span class="flow-no">3</span><div class="flow-icon">💬</div><h3>자녀 대화 코칭</h3><p>자연스럽게 대화를 이어갈 질문과 행동을 제안합니다.</p></article>
+        <div class="flow-arrow">→</div>
+        <article><span class="flow-no">4</span><div class="flow-icon">↔</div><h3>양방향 소통</h3><p>다음 가족 대화가 이어질 이유를 만듭니다.</p></article>
+      </div>
+    </section>
+
+    <section class="principles-section">
+      <div class="section-shell principles-grid">
+        <div><span class="light-eyebrow">DESIGN PRINCIPLES</span><h2>돌봄의 대상이 아니라,<br />대화의 주체로.</h2></div>
+        <div class="principles-list">
+          <article><span>01</span><div><strong>부모의 자율성</strong><p>감시·통제를 위한 점수화보다 본인이 말하고 싶어 하는 맥락을 존중합니다.</p></div></article>
+          <article><span>02</span><div><strong>최소 정보 원칙</strong><p>자녀에게 필요한 대화 맥락만 전달하는 방향을 지향합니다.</p></div></article>
+          <article><span>03</span><div><strong>실행 가능한 가이드</strong><p>추상적인 경고 대신 실제로 사용할 수 있는 문장과 행동을 제안합니다.</p></div></article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section-shell pitch-section">
+      <div class="pitch-card"><div><span>ONE-LINE PITCH</span><h2>“AI가 부모님과 대화하고,<br />자녀가 더 잘 대화하도록 돕습니다.”</h2></div><button class="primary-btn light" data-scroll="#demo">데모 다시 보기</button></div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="brand footer-brand"><span class="brand-mark">이</span><span><strong>이어봄</strong><small>AI Family Conversation Care Demo</small></span></div>
+    <p>Prototype · Gemini 3.6 Flash · 2026-08-12 build</p>
+  </footer>
+
+  <div class="toast" id="toast">완료</div>
+  <script src="app.js"></script>
+</body>
+</html>
